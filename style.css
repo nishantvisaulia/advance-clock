@@ -1,0 +1,63 @@
+body {
+  margin: 0;
+  height: 100vh;
+  background: #0f0f14;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: Arial;
+}
+
+h1 {
+  margin-bottom: 40px;
+  font-weight: 300;
+}
+
+.clock {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  border: 8px solid #222;
+  position: relative;
+  background: radial-gradient(#1a1a22, #0f0f14);
+}
+
+.hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom;
+  transform: translateX(-50%) rotate(0deg);
+}
+
+.hour {
+  width: 6px;
+  height: 70px;
+  background: white;
+  border-radius: 10px;
+}
+
+.minute {
+  width: 4px;
+  height: 100px;
+  background: #aaa;
+}
+
+.second {
+  width: 2px;
+  height: 120px;
+  background: red;
+}
+
+.center {
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
