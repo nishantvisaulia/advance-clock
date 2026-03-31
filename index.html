@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultra Premium Ring Clock</title>
+<title>Ultimate Ring Clock</title>
 
 <style>
 body {
   margin: 0;
   height: 100vh;
-  background: radial-gradient(circle at center, #151520, #0b0b10);
+  background: radial-gradient(circle at center, #14141c, #09090d);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -18,8 +18,20 @@ body {
 
 .clock {
   position: relative;
-  width: 440px;
-  height: 440px;
+  width: 420px;
+  height: 420px;
+}
+
+/* Center indicator line */
+.indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 240px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, white, transparent);
+  transform: translate(-50%, -50%);
+  opacity: 0.6;
 }
 
 /* Rings */
@@ -28,70 +40,60 @@ body {
   top: 50%;
   left: 50%;
   transform-origin: center;
-  transition: transform 0.8s ease-in-out;
+  transition: transform 0.6s ease;
 }
 
 .ring span {
   position: absolute;
   left: 50%;
   transform-origin: 0 0;
-  font-size: 12px;
+  font-size: 13px;
   color: #666;
   transition: all 0.3s ease;
 }
 
-/* Active highlight */
+/* Active item */
 .active {
-  color: #ffffff;
-  font-size: 15px;
+  color: #fff;
+  font-size: 16px;
   font-weight: 600;
-  text-shadow: 0 0 10px rgba(255,255,255,0.8);
+  text-shadow: 0 0 10px rgba(255,255,255,0.9);
 }
 
-/* Glow colors per ring */
+/* Glow per ring */
 #monthRing .active { color: #4da6ff; text-shadow: 0 0 12px #4da6ff; }
 #dateRing .active { color: #ff4d6d; text-shadow: 0 0 12px #ff4d6d; }
 #dayRing .active { color: #00ff88; text-shadow: 0 0 12px #00ff88; }
 
-/* Center glass UI */
+/* Center Glass */
 .center {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 160px;
-  height: 160px;
+  width: 150px;
+  height: 150px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
   box-shadow:
     0 0 30px rgba(255,255,255,0.05),
     inset 0 0 20px rgba(255,255,255,0.05);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }
 
-/* Time */
 .time {
-  font-size: 34px;
-  font-weight: 600;
+  font-size: 32px;
   letter-spacing: 2px;
 }
 
-/* Date */
-.date {
-  font-size: 13px;
-  color: #aaa;
-  margin-top: 5px;
-  letter-spacing: 1px;
-}
-
-/* subtle animation */
+/* subtle zoom */
 .clock:hover {
-  transform: scale(1.03);
-  transition: 0.4s ease;
+  transform: scale(1.04);
+  transition: 0.4s;
 }
 </style>
 </head>
@@ -100,13 +102,14 @@ body {
 
 <div class="clock">
 
+  <div class="indicator"></div>
+
   <div id="monthRing" class="ring"></div>
   <div id="dateRing" class="ring"></div>
   <div id="dayRing" class="ring"></div>
 
   <div class="center">
     <div id="time" class="time"></div>
-    <div id="fullDate" class="date"></div>
   </div>
 
 </div>
@@ -115,27 +118,31 @@ body {
 const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 const days = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
 
-function createRing(containerId, items, radius) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = "";
+function createRing(id, items, radius) {
+  const ring = document.getElementById(id);
+  ring.innerHTML = "";
 
   items.forEach((item, i) => {
     const angle = (360 / items.length) * i;
     const span = document.createElement("span");
+
     span.innerText = item;
 
-    span.style.transform = `
-      rotate(${angle}deg)
-      translate(${radius}px)
-      rotate(-${angle}deg)
-    `;
+    span.style.transform =
+      `rotate(${angle}deg) translate(${radius}px) rotate(-${angle}deg)`;
 
-    container.appendChild(span);
+    ring.appendChild(span);
   });
 }
 
-function updateActive(containerId, index) {
-  const spans = document.getElementById(containerId).children;
+function rotateToCenter(id, index, total) {
+  const angle = (360 / total) * index;
+  document.getElementById(id).style.transform =
+    `translate(-50%, -50%) rotate(${-angle}deg)`;
+}
+
+function updateActive(id, index) {
+  const spans = document.getElementById(id).children;
 
   for (let i = 0; i < spans.length; i++) {
     spans[i].classList.remove("active");
@@ -151,33 +158,26 @@ function updateClock() {
   const min = now.getMinutes();
   const hr = now.getHours();
 
-  // smooth rotation values
-  const smoothMin = min + sec / 60;
-  const smoothHr = (hr % 12) + smoothMin / 60;
-
   document.getElementById("time").innerText =
     `${String(hr).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
 
-  document.getElementById("fullDate").innerText =
-    `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+  const monthIndex = now.getMonth();
+  const dateIndex = now.getDate() - 1;
+  const dayIndex = now.getDay();
 
-  document.getElementById("monthRing").style.transform =
-    `translate(-50%, -50%) rotate(${(360/12)*now.getMonth()}deg)`;
+  rotateToCenter("monthRing", monthIndex, 12);
+  rotateToCenter("dateRing", dateIndex, 31);
+  rotateToCenter("dayRing", dayIndex, 7);
 
-  document.getElementById("dateRing").style.transform =
-    `translate(-50%, -50%) rotate(${(360/31)*(now.getDate()-1)}deg)`;
-
-  document.getElementById("dayRing").style.transform =
-    `translate(-50%, -50%) rotate(${(360/7)*now.getDay()}deg)`;
-    
-  updateActive("monthRing", now.getMonth());
-  updateActive("dateRing", now.getDate()-1);
-  updateActive("dayRing", now.getDay());
+  updateActive("monthRing", monthIndex);
+  updateActive("dateRing", dateIndex);
+  updateActive("dayRing", dayIndex);
 }
 
-createRing("monthRing", months, 170);
-createRing("dateRing", Array.from({length:31}, (_,i)=>i+1), 130);
-createRing("dayRing", days, 90);
+/* create rings */
+createRing("monthRing", months, 160);
+createRing("dateRing", Array.from({length:31}, (_,i)=>i+1), 120);
+createRing("dayRing", days, 80);
 
 setInterval(updateClock, 1000);
 updateClock();
