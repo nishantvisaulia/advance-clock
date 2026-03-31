@@ -2,19 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Clock Test</title>
+  <title>Advance Clock</title>
 
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #111;
+    }
+
     #clock {
       width: 200px;
       height: 200px;
-      border: 5px solid black;
+      border: 5px solid white;
       border-radius: 50%;
       position: relative;
-      margin: 50px auto;
     }
 
     .hand {
@@ -22,11 +29,10 @@
       bottom: 50%;
       left: 50%;
       transform-origin: bottom;
-      transform: rotate(0deg);
     }
 
-    #hours { width: 4px; height: 50px; background: black; }
-    #minutes { width: 3px; height: 70px; background: blue; }
+    #hours { width: 4px; height: 50px; background: white; }
+    #minutes { width: 3px; height: 70px; background: cyan; }
     #seconds { width: 2px; height: 90px; background: red; }
   </style>
 </head>
@@ -38,11 +44,10 @@
   <div id="seconds" class="hand"></div>
 </div>
 
-<!-- Your JS file -->
 <script src="script.js"></script>
 
 <script>
-  clockRotation(); // function call
+  clockRotation();
 </script>
 
 </body>
