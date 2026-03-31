@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Hyper UI Clock</title>
+<title>Apple Style Clock</title>
 
 <style>
 body {
   margin: 0;
   height: 100vh;
-  background: radial-gradient(circle at center, #101018, #050507);
+  background: radial-gradient(circle, #0d0d14, #050507);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -16,63 +16,24 @@ body {
   color: white;
 }
 
-/* GLOW BASE */
+/* CLOCK */
 .clock {
   position: relative;
-  width: 440px;
-  height: 440px;
+  width: 420px;
+  height: 420px;
 }
 
-/* GLOW RINGS */
-.ring-outline {
-  position: absolute;
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  filter: blur(1px);
-}
-
-.r1 {
-  width: 360px;
-  height: 360px;
-  border: 2px solid rgba(77,166,255,0.2);
-  box-shadow: 0 0 25px rgba(77,166,255,0.3);
-}
-
-.r2 {
-  width: 280px;
-  height: 280px;
-  border: 2px solid rgba(255,77,109,0.2);
-  box-shadow: 0 0 25px rgba(255,77,109,0.3);
-}
-
-.r3 {
-  width: 200px;
-  height: 200px;
-  border: 2px solid rgba(0,255,136,0.2);
-  box-shadow: 0 0 25px rgba(0,255,136,0.3);
-}
-
-/* indicator */
-.indicator {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 280px;
-  height: 2px;
-  background: linear-gradient(to right, transparent, white, transparent);
-  transform: translate(-50%, -50%);
-  opacity: 0.8;
-}
-
-/* ring text */
+/* RINGS */
 .ring {
   position: absolute;
   top: 50%;
   left: 50%;
   transform-origin: center;
-  transition: transform 0.6s ease;
+  cursor: grab;
+}
+
+.ring:active {
+  cursor: grabbing;
 }
 
 .ring span {
@@ -80,61 +41,47 @@ body {
   left: 50%;
   transform-origin: 0 0;
   font-size: 13px;
-  color: rgba(255,255,255,0.35);
-  transition: all 0.3s ease;
+  color: rgba(255,255,255,0.3);
+  transition: 0.2s;
 }
 
 /* ACTIVE */
 .active {
-  font-size: 17px;
-  font-weight: 600;
   color: white;
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: 0 0 12px white;
 }
 
-/* glow highlight */
-#monthRing .active {
-  color: #4da6ff;
-  text-shadow: 0 0 15px #4da6ff, 0 0 30px #4da6ff;
+/* CENTER LINE */
+.indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 260px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, white, transparent);
+  transform: translate(-50%, -50%);
 }
 
-#dateRing .active {
-  color: #ff4d6d;
-  text-shadow: 0 0 15px #ff4d6d, 0 0 30px #ff4d6d;
-}
-
-#dayRing .active {
-  color: #00ff88;
-  text-shadow: 0 0 15px #00ff88, 0 0 30px #00ff88;
-}
-
-/* CENTER GLASS */
+/* CENTER */
 .center {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 160px;
-  height: 160px;
+  width: 140px;
+  height: 140px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(14px);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow:
-    0 0 40px rgba(255,255,255,0.05),
-    inset 0 0 30px rgba(255,255,255,0.08);
 }
 
 .time {
-  font-size: 36px;
-  letter-spacing: 2px;
-}
-
-/* hover depth */
-.clock:hover {
-  transform: scale(1.05);
-  transition: 0.4s;
+  font-size: 30px;
 }
 </style>
 </head>
@@ -142,12 +89,6 @@ body {
 <body>
 
 <div class="clock">
-
-  <!-- glow rings -->
-  <div class="ring-outline r1"></div>
-  <div class="ring-outline r2"></div>
-  <div class="ring-outline r3"></div>
-
   <div class="indicator"></div>
 
   <div id="monthRing" class="ring"></div>
@@ -157,7 +98,6 @@ body {
   <div class="center">
     <div id="time" class="time"></div>
   </div>
-
 </div>
 
 <script>
@@ -181,48 +121,81 @@ function createRing(id, items, radius) {
   });
 }
 
-function rotateToCenter(id, index, total) {
-  const angle = (360 / total) * index;
-  document.getElementById(id).style.transform =
-    `translate(-50%, -50%) rotate(${-angle}deg)`;
+function setActive(ring, index) {
+  [...ring.children].forEach(el => el.classList.remove("active"));
+  ring.children[index].classList.add("active");
 }
 
-function updateActive(id, index) {
-  const spans = document.getElementById(id).children;
+/* INTERACTION */
+function enableDrag(ringId, totalItems) {
+  const ring = document.getElementById(ringId);
 
-  for (let i = 0; i < spans.length; i++) {
-    spans[i].classList.remove("active");
-  }
+  let angle = 0;
+  let velocity = 0;
+  let isDragging = false;
+  let lastX = 0;
 
-  spans[index].classList.add("active");
+  ring.addEventListener("mousedown", e => {
+    isDragging = true;
+    lastX = e.clientX;
+  });
+
+  window.addEventListener("mouseup", () => {
+    isDragging = false;
+
+    // inertia
+    const inertia = setInterval(() => {
+      velocity *= 0.95;
+      angle += velocity;
+
+      ring.style.transform =
+        `translate(-50%, -50%) rotate(${angle}deg)`;
+
+      if (Math.abs(velocity) < 0.01) {
+        clearInterval(inertia);
+
+        // snap
+        const step = 360 / totalItems;
+        const snapped = Math.round(angle / step) * step;
+        angle = snapped;
+
+        ring.style.transform =
+          `translate(-50%, -50%) rotate(${angle}deg)`;
+
+        const index = ((-angle / step) % totalItems + totalItems) % totalItems;
+        setActive(ring, Math.round(index));
+      }
+    }, 16);
+  });
+
+  window.addEventListener("mousemove", e => {
+    if (!isDragging) return;
+
+    const dx = e.clientX - lastX;
+    velocity = dx * 0.2;
+    angle += velocity;
+    lastX = e.clientX;
+
+    ring.style.transform =
+      `translate(-50%, -50%) rotate(${angle}deg)`;
+  });
 }
 
+/* CLOCK */
 function updateClock() {
   const now = new Date();
 
-  const sec = now.getSeconds();
-  const min = now.getMinutes();
-  const hr = now.getHours();
-
   document.getElementById("time").innerText =
-    `${String(hr).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-
-  const m = now.getMonth();
-  const d = now.getDate() - 1;
-  const day = now.getDay();
-
-  rotateToCenter("monthRing", m, 12);
-  rotateToCenter("dateRing", d, 31);
-  rotateToCenter("dayRing", day, 7);
-
-  updateActive("monthRing", m);
-  updateActive("dateRing", d);
-  updateActive("dayRing", day);
+    now.toLocaleTimeString();
 }
 
-createRing("monthRing", months, 180);
-createRing("dateRing", Array.from({length:31}, (_,i)=>i+1), 140);
-createRing("dayRing", days, 100);
+createRing("monthRing", months, 170);
+createRing("dateRing", Array.from({length:31}, (_,i)=>i+1), 130);
+createRing("dayRing", days, 90);
+
+enableDrag("monthRing", 12);
+enableDrag("dateRing", 31);
+enableDrag("dayRing", 7);
 
 setInterval(updateClock, 1000);
 updateClock();
