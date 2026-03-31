@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Apple Style Clock</title>
+<title>iOS Style Ring Clock</title>
 
 <style>
 body {
   margin: 0;
   height: 100vh;
-  background: radial-gradient(circle, #0d0d14, #050507);
+  background: radial-gradient(circle, #0b0b12, #030304);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   color: white;
 }
 
@@ -21,39 +21,25 @@ body {
   position: relative;
   width: 420px;
   height: 420px;
+  perspective: 1000px;
 }
 
-/* RINGS */
-.ring {
+/* FADE MASK (top-bottom like iOS) */
+.fade {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: center;
-  cursor: grab;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    #030304 0%,
+    transparent 30%,
+    transparent 70%,
+    #030304 100%
+  );
 }
 
-.ring:active {
-  cursor: grabbing;
-}
-
-.ring span {
-  position: absolute;
-  left: 50%;
-  transform-origin: 0 0;
-  font-size: 13px;
-  color: rgba(255,255,255,0.3);
-  transition: 0.2s;
-}
-
-/* ACTIVE */
-.active {
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  text-shadow: 0 0 12px white;
-}
-
-/* CENTER LINE */
+/* INDICATOR */
 .indicator {
   position: absolute;
   top: 50%;
@@ -64,24 +50,60 @@ body {
   transform: translate(-50%, -50%);
 }
 
-/* CENTER */
+/* RING */
+.ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  cursor: grab;
+}
+
+.ring span {
+  position: absolute;
+  left: 50%;
+  transform-origin: 0 0;
+  font-size: 13px;
+  color: rgba(255,255,255,0.25);
+  transition: all 0.25s ease;
+}
+
+/* ACTIVE FOCUS */
+.active {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  transform: scale(1.4);
+  text-shadow: 0 0 10px white;
+}
+
+/* CENTER GLASS */
 .center {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 140px;
-  height: 140px;
+  width: 150px;
+  height: 150px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(16px);
   display: flex;
   justify-content: center;
   align-items: center;
+  box-shadow:
+    0 0 40px rgba(255,255,255,0.05),
+    inset 0 0 20px rgba(255,255,255,0.08);
 }
 
 .time {
-  font-size: 30px;
+  font-size: 34px;
+}
+
+/* HOVER 3D */
+.clock:hover {
+  transform: rotateX(5deg) rotateY(5deg) scale(1.03);
+  transition: 0.4s;
 }
 </style>
 </head>
@@ -89,6 +111,8 @@ body {
 <body>
 
 <div class="clock">
+
+  <div class="fade"></div>
   <div class="indicator"></div>
 
   <div id="monthRing" class="ring"></div>
@@ -98,6 +122,7 @@ body {
   <div class="center">
     <div id="time" class="time"></div>
   </div>
+
 </div>
 
 <script>
@@ -121,77 +146,82 @@ function createRing(id, items, radius) {
   });
 }
 
-function setActive(ring, index) {
+function setActive(ring, angle, total) {
+  const step = 360 / total;
+  let index = Math.round((-angle) / step) % total;
+  if (index < 0) index += total;
+
   [...ring.children].forEach(el => el.classList.remove("active"));
   ring.children[index].classList.add("active");
 }
 
-/* INTERACTION */
 function enableDrag(ringId, totalItems) {
   const ring = document.getElementById(ringId);
 
   let angle = 0;
   let velocity = 0;
-  let isDragging = false;
+  let dragging = false;
   let lastX = 0;
 
-  ring.addEventListener("mousedown", e => {
-    isDragging = true;
-    lastX = e.clientX;
-  });
-
-  window.addEventListener("mouseup", () => {
-    isDragging = false;
-
-    // inertia
-    const inertia = setInterval(() => {
-      velocity *= 0.95;
-      angle += velocity;
-
-      ring.style.transform =
-        `translate(-50%, -50%) rotate(${angle}deg)`;
-
-      if (Math.abs(velocity) < 0.01) {
-        clearInterval(inertia);
-
-        // snap
-        const step = 360 / totalItems;
-        const snapped = Math.round(angle / step) * step;
-        angle = snapped;
-
-        ring.style.transform =
-          `translate(-50%, -50%) rotate(${angle}deg)`;
-
-        const index = ((-angle / step) % totalItems + totalItems) % totalItems;
-        setActive(ring, Math.round(index));
-      }
-    }, 16);
-  });
-
-  window.addEventListener("mousemove", e => {
-    if (!isDragging) return;
-
-    const dx = e.clientX - lastX;
-    velocity = dx * 0.2;
-    angle += velocity;
-    lastX = e.clientX;
-
+  function update() {
     ring.style.transform =
       `translate(-50%, -50%) rotate(${angle}deg)`;
-  });
+    setActive(ring, angle, totalItems);
+  }
+
+  function inertia() {
+    velocity *= 0.95;
+    angle += velocity;
+    update();
+
+    if (Math.abs(velocity) > 0.1) {
+      requestAnimationFrame(inertia);
+    } else {
+      const step = 360 / totalItems;
+      angle = Math.round(angle / step) * step;
+      update();
+    }
+  }
+
+  const start = (x) => {
+    dragging = true;
+    lastX = x;
+  };
+
+  const move = (x) => {
+    if (!dragging) return;
+    const dx = x - lastX;
+    velocity = dx * 0.25;
+    angle += velocity;
+    lastX = x;
+    update();
+  };
+
+  const end = () => {
+    dragging = false;
+    inertia();
+  };
+
+  // mouse
+  ring.addEventListener("mousedown", e => start(e.clientX));
+  window.addEventListener("mousemove", e => move(e.clientX));
+  window.addEventListener("mouseup", end);
+
+  // touch
+  ring.addEventListener("touchstart", e => start(e.touches[0].clientX));
+  window.addEventListener("touchmove", e => move(e.touches[0].clientX));
+  window.addEventListener("touchend", end);
 }
 
-/* CLOCK */
 function updateClock() {
   const now = new Date();
-
   document.getElementById("time").innerText =
     now.toLocaleTimeString();
 }
 
-createRing("monthRing", months, 170);
-createRing("dateRing", Array.from({length:31}, (_,i)=>i+1), 130);
-createRing("dayRing", days, 90);
+createRing("monthRing", months, 180);
+createRing("dateRing", Array.from({length:31}, (_,i)=>i+1), 140);
+createRing("dayRing", days, 100);
 
 enableDrag("monthRing", 12);
 enableDrag("dateRing", 31);
