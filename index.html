@@ -8,7 +8,7 @@
 body {
   margin: 0;
   height: 100vh;
-  background: radial-gradient(circle at center, #14141c, #09090d);
+  background: radial-gradient(circle at center, #12121a, #08080c);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -22,19 +22,33 @@ body {
   height: 420px;
 }
 
-/* Center indicator line */
+/* REAL visible rings */
+.ring-outline {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.08);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.r1 { width: 340px; height: 340px; }
+.r2 { width: 260px; height: 260px; }
+.r3 { width: 180px; height: 180px; }
+
+/* indicator line */
 .indicator {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 240px;
+  width: 260px;
   height: 2px;
   background: linear-gradient(to right, transparent, white, transparent);
   transform: translate(-50%, -50%);
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
-/* Rings */
+/* rings */
 .ring {
   position: absolute;
   top: 50%;
@@ -47,52 +61,50 @@ body {
   position: absolute;
   left: 50%;
   transform-origin: 0 0;
-  font-size: 13px;
-  color: #666;
+  font-size: 12px;
+  color: #555;
   transition: all 0.3s ease;
 }
 
-/* Active item */
+/* active highlight */
 .active {
-  color: #fff;
-  font-size: 16px;
+  color: white;
+  font-size: 15px;
   font-weight: 600;
-  text-shadow: 0 0 10px rgba(255,255,255,0.9);
 }
 
-/* Glow per ring */
-#monthRing .active { color: #4da6ff; text-shadow: 0 0 12px #4da6ff; }
-#dateRing .active { color: #ff4d6d; text-shadow: 0 0 12px #ff4d6d; }
-#dayRing .active { color: #00ff88; text-shadow: 0 0 12px #00ff88; }
+/* glow colors */
+#monthRing .active { color: #4da6ff; text-shadow: 0 0 10px #4da6ff; }
+#dateRing .active { color: #ff4d6d; text-shadow: 0 0 10px #ff4d6d; }
+#dayRing .active { color: #00ff88; text-shadow: 0 0 10px #00ff88; }
 
-/* Center Glass */
+/* center */
 .center {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 150px;
-  height: 150px;
+  width: 140px;
+  height: 140px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
   box-shadow:
-    0 0 30px rgba(255,255,255,0.05),
-    inset 0 0 20px rgba(255,255,255,0.05);
+    0 0 20px rgba(255,255,255,0.05),
+    inset 0 0 15px rgba(255,255,255,0.05);
 }
 
 .time {
-  font-size: 32px;
+  font-size: 30px;
   letter-spacing: 2px;
 }
 
-/* subtle zoom */
+/* hover */
 .clock:hover {
-  transform: scale(1.04);
+  transform: scale(1.03);
   transition: 0.4s;
 }
 </style>
@@ -102,12 +114,20 @@ body {
 
 <div class="clock">
 
+  <!-- REAL RINGS -->
+  <div class="ring-outline r1"></div>
+  <div class="ring-outline r2"></div>
+  <div class="ring-outline r3"></div>
+
+  <!-- indicator -->
   <div class="indicator"></div>
 
+  <!-- dynamic rings -->
   <div id="monthRing" class="ring"></div>
   <div id="dateRing" class="ring"></div>
   <div id="dayRing" class="ring"></div>
 
+  <!-- center -->
   <div class="center">
     <div id="time" class="time"></div>
   </div>
@@ -161,23 +181,23 @@ function updateClock() {
   document.getElementById("time").innerText =
     `${String(hr).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
 
-  const monthIndex = now.getMonth();
-  const dateIndex = now.getDate() - 1;
-  const dayIndex = now.getDay();
+  const m = now.getMonth();
+  const d = now.getDate() - 1;
+  const day = now.getDay();
 
-  rotateToCenter("monthRing", monthIndex, 12);
-  rotateToCenter("dateRing", dateIndex, 31);
-  rotateToCenter("dayRing", dayIndex, 7);
+  rotateToCenter("monthRing", m, 12);
+  rotateToCenter("dateRing", d, 31);
+  rotateToCenter("dayRing", day, 7);
 
-  updateActive("monthRing", monthIndex);
-  updateActive("dateRing", dateIndex);
-  updateActive("dayRing", dayIndex);
+  updateActive("monthRing", m);
+  updateActive("dateRing", d);
+  updateActive("dayRing", day);
 }
 
-/* create rings */
-createRing("monthRing", months, 160);
-createRing("dateRing", Array.from({length:31}, (_,i)=>i+1), 120);
-createRing("dayRing", days, 80);
+/* create rings with PERFECT spacing */
+createRing("monthRing", months, 170);
+createRing("dateRing", Array.from({length:31}, (_,i)=>i+1), 130);
+createRing("dayRing", days, 90);
 
 setInterval(updateClock, 1000);
 updateClock();
