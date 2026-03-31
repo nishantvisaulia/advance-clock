@@ -1,41 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Advance Clock</title>
+<meta charset="UTF-8">
+<title>Working Clock</title>
 
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- jQuery (ONLY ONCE) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: #111;
-    }
+<style>
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #111;
+}
 
-    #clock {
-      width: 200px;
-      height: 200px;
-      border: 5px solid white;
-      border-radius: 50%;
-      position: relative;
-    }
+#clock {
+  width: 250px;
+  height: 250px;
+  border: 6px solid white;
+  border-radius: 50%;
+  position: relative;
+}
 
-    .hand {
-      position: absolute;
-      bottom: 50%;
-      left: 50%;
-      transform-origin: bottom;
-    }
+.hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom;
+}
 
-    #hours { width: 4px; height: 50px; background: white; }
-    #minutes { width: 3px; height: 70px; background: cyan; }
-    #seconds { width: 2px; height: 90px; background: red; }
-  </style>
+#hours {
+  width: 5px;
+  height: 60px;
+  background: white;
+}
+
+#minutes {
+  width: 3px;
+  height: 90px;
+  background: cyan;
+}
+
+#seconds {
+  width: 2px;
+  height: 110px;
+  background: red;
+}
+</style>
 </head>
+
 <body>
 
 <div id="clock">
@@ -44,22 +59,32 @@
   <div id="seconds" class="hand"></div>
 </div>
 
-<script src="script.js"></script>
-
 <script>
+function clockRotation() {
+  setInterval(function() {
+
+    var date = new Date();
+
+    var seconds = date.getSeconds();
+    var minutes = date.getMinutes();
+    var hour = date.getHours();
+
+    var secondsRotation = seconds * 6;
+    var minutesRotation = minutes * 6;
+    var hoursRotation = hour * 30 + minutes / 2;
+
+    $("#seconds").css("transform", "rotate(" + secondsRotation + "deg)");
+    $("#minutes").css("transform", "rotate(" + minutesRotation + "deg)");
+    $("#hours").css("transform", "rotate(" + hoursRotation + "deg)");
+
+  }, 1000);
+}
+
+// RUN CLOCK
+$(document).ready(function() {
   clockRotation();
+});
 </script>
-
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="script.js"></script>
-
-<script>
-  $(document).ready(function() {
-    clockRotation();
-  });
-</script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  
 
 </body>
 </html>
