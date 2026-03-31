@@ -1,27 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Modern Clock</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Modern Ring Clock</title>
+
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  background: #0f0f14;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: Arial;
+}
+
+.clock {
+  position: relative;
+  width: 350px;
+  height: 350px;
+}
+
+svg {
+  transform: rotate(-90deg);
+}
+
+circle {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.sec { stroke: #ff4d6d; }
+.min { stroke: #4da6ff; }
+.hour { stroke: #00ff88; }
+
+.center-time {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.time {
+  font-size: 28px;
+}
+
+.date {
+  font-size: 14px;
+  color: #aaa;
+  margin-top: 5px;
+}
+</style>
 </head>
+
 <body>
 
-<h1>Clock Modern Way</h1>
-
 <div class="clock">
-  <div class="hand hour" id="hour"></div>
-  <div class="hand minute" id="minute"></div>
-  <div class="hand second" id="second"></div>
-  <div class="center"></div>
-</div>
-  
-  <div class="date-box">
-  <span id="day">MON</span>,
-  <span id="date">01</span>
-  <span id="month">JAN</span>
+
+  <svg width="350" height="350">
+    <circle class="hour" cx="175" cy="175" r="120"/>
+    <circle class="min" cx="175" cy="175" r="140"/>
+    <circle class="sec" cx="175" cy="175" r="160"/>
+  </svg>
+
+  <div class="center-time">
+    <div class="time" id="time">00:00:00</div>
+    <div class="date" id="date">MON, 01 JAN</div>
+  </div>
+
 </div>
 
-<script src="script.js"></script>
+<script>
+function updateClock() {
+  const now = new Date();
+
+  let sec = now.getSeconds();
+  let min = now.getMinutes();
+  let hr = now.getHours();
+
+  // Time text
+  document.getElementById("time").innerText =
+    `${String(hr).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+
+  // Date
+  const days = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+  const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+
+  document.getElementById("date").innerText =
+    `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+
+  // Circle animation
+  const secCircle = document.querySelector(".sec");
+  const minCircle = document.querySelector(".min");
+  const hourCircle = document.querySelector(".hour");
+
+  const secOffset = 1000 - (sec / 60) * 1000;
+  const minOffset = 900 - (min / 60) * 900;
+  const hourOffset = 800 - ((hr % 12) / 12) * 800;
+
+  secCircle.style.strokeDasharray = "1000";
+  secCircle.style.strokeDashoffset = secOffset;
+
+  minCircle.style.strokeDasharray = "900";
+  minCircle.style.strokeDashoffset = minOffset;
+
+  hourCircle.style.strokeDasharray = "800";
+  hourCircle.style.strokeDashoffset = hourOffset;
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+
 </body>
 </html>
