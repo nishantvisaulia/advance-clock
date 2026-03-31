@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Modern Ring Clock</title>
+<title>Ultra Ring Clock</title>
 
 <style>
 body {
@@ -12,31 +12,38 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: white;
   font-family: Arial;
+  color: white;
 }
 
 .clock {
   position: relative;
-  width: 350px;
-  height: 350px;
+  width: 420px;
+  height: 420px;
 }
 
-svg {
-  transform: rotate(-90deg);
+.ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
 }
 
-circle {
-  fill: none;
-  stroke-width: 8;
-  stroke-linecap: round;
+.ring span {
+  position: absolute;
+  left: 50%;
+  transform-origin: 0 0;
+  font-size: 12px;
+  color: #888;
 }
 
-.sec { stroke: #ff4d6d; }
-.min { stroke: #4da6ff; }
-.hour { stroke: #00ff88; }
+.active {
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
 
-.center-time {
+.center {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -45,7 +52,7 @@ circle {
 }
 
 .time {
-  font-size: 28px;
+  font-size: 32px;
 }
 
 .date {
@@ -60,57 +67,85 @@ circle {
 
 <div class="clock">
 
-  <svg width="350" height="350">
-    <circle class="hour" cx="175" cy="175" r="120"/>
-    <circle class="min" cx="175" cy="175" r="140"/>
-    <circle class="sec" cx="175" cy="175" r="160"/>
-  </svg>
+  <div id="monthRing" class="ring"></div>
+  <div id="dateRing" class="ring"></div>
+  <div id="dayRing" class="ring"></div>
 
-  <div class="center-time">
-    <div class="time" id="time">00:00:00</div>
-    <div class="date" id="date">MON, 01 JAN</div>
+  <div class="center">
+    <div id="time" class="time"></div>
+    <div id="fullDate" class="date"></div>
   </div>
 
 </div>
 
 <script>
+const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+const days = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+
+function createRing(containerId, items, radius) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+
+  items.forEach((item, i) => {
+    const angle = (360 / items.length) * i;
+    const span = document.createElement("span");
+    span.innerText = item;
+
+    span.style.transform = `
+      rotate(${angle}deg)
+      translate(${radius}px)
+      rotate(-${angle}deg)
+    `;
+
+    container.appendChild(span);
+  });
+}
+
+function updateActive(containerId, index) {
+  const spans = document.getElementById(containerId).children;
+
+  for (let i = 0; i < spans.length; i++) {
+    spans[i].classList.remove("active");
+  }
+
+  spans[index].classList.add("active");
+}
+
 function updateClock() {
   const now = new Date();
 
-  let sec = now.getSeconds();
-  let min = now.getMinutes();
-  let hr = now.getHours();
+  const sec = now.getSeconds();
+  const min = now.getMinutes();
+  const hr = now.getHours();
 
-  // Time text
   document.getElementById("time").innerText =
     `${String(hr).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
 
-  // Date
-  const days = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
-  const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
-
-  document.getElementById("date").innerText =
+  document.getElementById("fullDate").innerText =
     `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
 
-  // Circle animation
-  const secCircle = document.querySelector(".sec");
-  const minCircle = document.querySelector(".min");
-  const hourCircle = document.querySelector(".hour");
+  // rotate rings
+  document.getElementById("monthRing").style.transform =
+    `translate(-50%, -50%) rotate(${(360/12)*now.getMonth()}deg)`;
 
-  const secOffset = 1000 - (sec / 60) * 1000;
-  const minOffset = 900 - (min / 60) * 900;
-  const hourOffset = 800 - ((hr % 12) / 12) * 800;
+  document.getElementById("dateRing").style.transform =
+    `translate(-50%, -50%) rotate(${(360/31)*(now.getDate()-1)}deg)`;
 
-  secCircle.style.strokeDasharray = "1000";
-  secCircle.style.strokeDashoffset = secOffset;
+  document.getElementById("dayRing").style.transform =
+    `translate(-50%, -50%) rotate(${(360/7)*now.getDay()}deg)`;
 
-  minCircle.style.strokeDasharray = "900";
-  minCircle.style.strokeDashoffset = minOffset;
-
-  hourCircle.style.strokeDasharray = "800";
-  hourCircle.style.strokeDashoffset = hourOffset;
+  // highlight active
+  updateActive("monthRing", now.getMonth());
+  updateActive("dateRing", now.getDate()-1);
+  updateActive("dayRing", now.getDay());
 }
 
+// create rings
+createRing("monthRing", months, 160);
+createRing("dateRing", Array.from({length:31}, (_,i)=>i+1), 120);
+createRing("dayRing", days, 80);
+
+// run
 setInterval(updateClock, 1000);
 updateClock();
 </script>
