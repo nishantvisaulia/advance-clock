@@ -61,3 +61,26 @@ h1 {
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+.date-box {
+  margin-top: 30px;
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: #ccc;
+}
+
+.date-box span {
+  margin: 0 5px;
+}
+
+#day {
+  color: #00ff88;
+}
+
+#date {
+  color: #ff4d6d;
+}
+
+#month {
+  color: #4da6ff;
+}
