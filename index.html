@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultimate Ring Clock</title>
+<title>Hyper UI Clock</title>
 
 <style>
 body {
   margin: 0;
   height: 100vh;
-  background: radial-gradient(circle at center, #12121a, #08080c);
+  background: radial-gradient(circle at center, #101018, #050507);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -16,39 +16,57 @@ body {
   color: white;
 }
 
+/* GLOW BASE */
 .clock {
   position: relative;
-  width: 420px;
-  height: 420px;
+  width: 440px;
+  height: 440px;
 }
 
-/* REAL visible rings */
+/* GLOW RINGS */
 .ring-outline {
   position: absolute;
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.08);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  filter: blur(1px);
 }
 
-.r1 { width: 340px; height: 340px; }
-.r2 { width: 260px; height: 260px; }
-.r3 { width: 180px; height: 180px; }
+.r1 {
+  width: 360px;
+  height: 360px;
+  border: 2px solid rgba(77,166,255,0.2);
+  box-shadow: 0 0 25px rgba(77,166,255,0.3);
+}
 
-/* indicator line */
+.r2 {
+  width: 280px;
+  height: 280px;
+  border: 2px solid rgba(255,77,109,0.2);
+  box-shadow: 0 0 25px rgba(255,77,109,0.3);
+}
+
+.r3 {
+  width: 200px;
+  height: 200px;
+  border: 2px solid rgba(0,255,136,0.2);
+  box-shadow: 0 0 25px rgba(0,255,136,0.3);
+}
+
+/* indicator */
 .indicator {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 260px;
+  width: 280px;
   height: 2px;
   background: linear-gradient(to right, transparent, white, transparent);
   transform: translate(-50%, -50%);
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
-/* rings */
+/* ring text */
 .ring {
   position: absolute;
   top: 50%;
@@ -61,50 +79,61 @@ body {
   position: absolute;
   left: 50%;
   transform-origin: 0 0;
-  font-size: 12px;
-  color: #555;
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
   transition: all 0.3s ease;
 }
 
-/* active highlight */
+/* ACTIVE */
 .active {
-  color: white;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
+  color: white;
 }
 
-/* glow colors */
-#monthRing .active { color: #4da6ff; text-shadow: 0 0 10px #4da6ff; }
-#dateRing .active { color: #ff4d6d; text-shadow: 0 0 10px #ff4d6d; }
-#dayRing .active { color: #00ff88; text-shadow: 0 0 10px #00ff88; }
+/* glow highlight */
+#monthRing .active {
+  color: #4da6ff;
+  text-shadow: 0 0 15px #4da6ff, 0 0 30px #4da6ff;
+}
 
-/* center */
+#dateRing .active {
+  color: #ff4d6d;
+  text-shadow: 0 0 15px #ff4d6d, 0 0 30px #ff4d6d;
+}
+
+#dayRing .active {
+  color: #00ff88;
+  text-shadow: 0 0 15px #00ff88, 0 0 30px #00ff88;
+}
+
+/* CENTER GLASS */
 .center {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 140px;
-  height: 140px;
+  width: 160px;
+  height: 160px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: rgba(255,255,255,0.04);
-  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(14px);
   display: flex;
   justify-content: center;
   align-items: center;
   box-shadow:
-    0 0 20px rgba(255,255,255,0.05),
-    inset 0 0 15px rgba(255,255,255,0.05);
+    0 0 40px rgba(255,255,255,0.05),
+    inset 0 0 30px rgba(255,255,255,0.08);
 }
 
 .time {
-  font-size: 30px;
+  font-size: 36px;
   letter-spacing: 2px;
 }
 
-/* hover */
+/* hover depth */
 .clock:hover {
-  transform: scale(1.03);
+  transform: scale(1.05);
   transition: 0.4s;
 }
 </style>
@@ -114,20 +143,17 @@ body {
 
 <div class="clock">
 
-  <!-- REAL RINGS -->
+  <!-- glow rings -->
   <div class="ring-outline r1"></div>
   <div class="ring-outline r2"></div>
   <div class="ring-outline r3"></div>
 
-  <!-- indicator -->
   <div class="indicator"></div>
 
-  <!-- dynamic rings -->
   <div id="monthRing" class="ring"></div>
   <div id="dateRing" class="ring"></div>
   <div id="dayRing" class="ring"></div>
 
-  <!-- center -->
   <div class="center">
     <div id="time" class="time"></div>
   </div>
@@ -194,10 +220,9 @@ function updateClock() {
   updateActive("dayRing", day);
 }
 
-/* create rings with PERFECT spacing */
-createRing("monthRing", months, 170);
-createRing("dateRing", Array.from({length:31}, (_,i)=>i+1), 130);
-createRing("dayRing", days, 90);
+createRing("monthRing", months, 180);
+createRing("dateRing", Array.from({length:31}, (_,i)=>i+1), 140);
+createRing("dayRing", days, 100);
 
 setInterval(updateClock, 1000);
 updateClock();
